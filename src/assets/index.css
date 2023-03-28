@@ -6,4 +6,25 @@ body {
 .keyboard-btn {
   @apply rounded-md  bg-key_light_bg text-lg lg:p-5 md:p-3 p-2  font-semibold text-key_light;
 }
+.letter-container {
+  @apply grid grid-cols-5 gap-2 w-full;
+}
+.cell {
+  @apply rounded-md bg-cell_default_bg aspect-square text-3xl uppercase md:text-4xl font-extrabold text-white flex items-center justify-center;
+}
+.fade-enter-active {
+  animation: fade 0.7s;
+}
+.fade-leave-active {
+  animation: fade 0.7s reverse;
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @tailwind utilities;

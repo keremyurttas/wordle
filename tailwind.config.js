@@ -9,7 +9,7 @@ module.exports = {
         cell_default_bg: "#daddde",
         cell_false_bg: "#939B9F",
         cell_true_bg: "#66A060",
-        cell_danger_bg: "#CEB02C",
+        cell_false_position: "#CEB02C",
         key_light_bg: "#D3D6DA",
       },
       textColor: {

@@ -1,9 +1,20 @@
 <template>
+  <transition name="fade">
+    <div v-if="isHowToPopupActive">
+      <my-popup @close="isHowToPopupActive = false"></my-popup>
+    </div>
+  </transition>
   <section class="md:py-16 py-5 space-y-16">
     <div
       class="mx-auto px-6 py-8 flex gap-8 md:gap-40 bg-header_bg w-max rounded-2xl"
     >
-      <button><img src="./assets/icons/questionMark.svg" alt="" /></button>
+      <button>
+        <img
+          @click="isHowToPopupActive = true"
+          src="./assets/icons/questionMark.svg"
+          alt=""
+        />
+      </button>
       <h2 class="font text-2xl md:text-4xl font-semibold">WORDLE</h2>
       <div class="gap-x-4 md:gap-x-7 flex items-center">
         <button><img src="./assets/icons/statistics.svg" alt="" /></button>
@@ -12,10 +23,10 @@
     </div>
 
     <div class="mx-auto w-2/3 md:w-1/3 lg:w-1/5">
-      <div class="grid grid-cols-5 gap-2 w-full">
+      <div class="letter-container">
         <div
           :class="handleCellBG(cell)"
-          class="rounded-md bg-cell_default_bg aspect-square text-3xl uppercase md:text-4xl font-extrabold text-white flex items-center justify-center"
+          class="cell"
           v-for="(cell, i) in cellValues"
           :key="i"
         >
@@ -62,6 +73,7 @@
   </section>
 </template>
 <script setup lang="ts">
+import myPopup from "./components/myPopup.vue";
 import { ref, computed } from "vue";
 const entries = ref(
   Array.from({ length: 6 }, () =>
@@ -73,9 +85,10 @@ const entries = ref(
     })
   )
 );
-const dailyWord = "hello";
+const dailyWord = "gizem";
 let index = 0;
 let row = ref(0);
+const isHowToPopupActive = ref(false);
 
 function insertLetter(key: string) {
   index <= 4
@@ -97,7 +110,7 @@ function checkPredict() {
   entries.value[row.value].forEach((entry, index) =>
     entry.letter == wordArray[index]
       ? (entry.result = "true")
-      : wordArray.includes(entry.letter)
+      : wordArray.includes(entry.letter) && entry.letter !== wordArray[index]
       ? (entry.result = "falsePosition")
       : (entry.result = "false")
   );
@@ -112,7 +125,7 @@ function handleCellBG(cell: { letter: string; result: string }) {
   return cell.result === "true"
     ? "bg-cell_true_bg"
     : cell.result == "falsePosition"
-    ? "bg-cell_danger_bg"
+    ? "bg-cell_false_position"
     : cell.result == "false"
     ? "bg-cell_false_bg"
     : undefined;
@@ -122,7 +135,17 @@ const cellValues = computed(() => {
   entries.value.forEach((element) => {
     element.forEach((x) => arr.push(x));
   });
-  console.log(arr);
   return arr;
 });
 </script>
+<style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

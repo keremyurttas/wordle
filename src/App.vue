@@ -14,11 +14,12 @@
     <div class="mx-auto w-2/3 md:w-1/3 lg:w-1/5">
       <div class="grid grid-cols-5 gap-2 w-full">
         <div
+          :class="handleCellBG(cell)"
           class="rounded-md bg-cell_default_bg aspect-square text-3xl uppercase md:text-4xl font-extrabold text-white flex items-center justify-center"
           v-for="(cell, i) in cellValues"
           :key="i"
         >
-          {{ cell }}
+          {{ cell.letter }}
         </div>
       </div>
     </div>
@@ -63,31 +64,65 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 const entries = ref(
-  Array.from({ length: 6 }, () => Array.from({ length: 5 }, () => ""))
+  Array.from({ length: 6 }, () =>
+    Array.from({ length: 5 }, () => {
+      return {
+        letter: "",
+        result: "",
+      };
+    })
+  )
 );
+const dailyWord = "hello";
 let index = 0;
 let row = ref(0);
 
 function insertLetter(key: string) {
   index <= 4
-    ? (entries.value[row.value].splice(index, 1, key), index++)
+    ? (entries.value[row.value].splice(index, 1, { letter: key, result: "" }),
+      index++)
     : undefined;
 }
 function deleteLetter() {
-  entries.value[row.value].splice(index - 1, 1, "");
+  entries.value[row.value].splice(index - 1, 1, { letter: "", result: "" });
   index > 0 ? index-- : undefined;
 }
 function predict() {
-  console.log("sa");
-  entries.value[row.value].filter((cell) => cell != "").length == 5
-    ? (alert("check"), row.value++, (index = 0))
+  entries.value[row.value].filter((cell) => cell.letter != "").length == 5
+    ? (checkPredict(), row.value++, (index = 0))
     : alert("Not enough letters");
 }
+function checkPredict() {
+  const wordArray = dailyWord.split("");
+  entries.value[row.value].forEach((entry, index) =>
+    entry.letter == wordArray[index]
+      ? (entry.result = "true")
+      : wordArray.includes(entry.letter)
+      ? (entry.result = "falsePosition")
+      : (entry.result = "false")
+  );
+  checkGameIsOver();
+}
+function checkGameIsOver() {
+  entries.value[row.value].filter((entry) => entry.result == "true").length == 5
+    ? alert("You win daily word is " + dailyWord + ".")
+    : undefined;
+}
+function handleCellBG(cell: { letter: string; result: string }) {
+  return cell.result === "true"
+    ? "bg-cell_true_bg"
+    : cell.result == "falsePosition"
+    ? "bg-cell_danger_bg"
+    : cell.result == "false"
+    ? "bg-cell_false_bg"
+    : undefined;
+}
 const cellValues = computed(() => {
-  let arr: string[] = [];
+  let arr: object[] = [];
   entries.value.forEach((element) => {
     element.forEach((x) => arr.push(x));
   });
+  console.log(arr);
   return arr;
 });
 </script>

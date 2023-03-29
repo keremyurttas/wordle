@@ -1,6 +1,6 @@
 <template>
   <section
-    class="w-full h-full fixed flex items-center top-0 justify-center backdrop-blur-sm z-50"
+    class="w-full h-full fixed flex pt-20 top-0 justify-center backdrop-blur-sm z-50"
   >
     <div
       class="w-max p-10 rounded-xl backdrop-blur-sm justify-center h-max bg-white space-y-4 shadow-lg"
@@ -27,7 +27,10 @@
             <div class="letter-container w-1/2">
               <div
                 class="cell text-lg md:text-2xl"
-                :class="{ 'bg-cell_true_bg': index == 0 }"
+                :class="{
+                  'bg-cell_true_bg': index == 0,
+                  'rotate-x': animation == true,
+                }"
                 v-for="(cell, index) in ['w', 'e', 'a', 'r', 'y']"
                 :key="index"
               >
@@ -42,7 +45,10 @@
             <div class="letter-container w-1/2">
               <div
                 class="cell text-lg md:text-2xl"
-                :class="{ 'bg-cell_false_position': index == 1 }"
+                :class="{
+                  'bg-cell_false_position': index == 1,
+                  'rotate-x': animation == true,
+                }"
                 v-for="(cell, index) in ['p', 'i', 'l', 'l', 's']"
                 :key="index"
               >
@@ -57,7 +63,10 @@
             <div class="letter-container w-1/2">
               <div
                 class="cell text-lg md:text-2xl"
-                :class="{ 'bg-cell_false_bg': index == 3 }"
+                :class="{
+                  'bg-cell_false_bg': index == 3,
+                  'rotate-x': animation == true,
+                }"
                 v-for="(cell, index) in ['v', 'a', 'g', 'u', 'e']"
                 :key="index"
               >
@@ -76,3 +85,12 @@
   position: 0;
 }
 </style>
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
+const animation = ref(false);
+onMounted(() => {
+  setTimeout(() => {
+    animation.value = true;
+  },500);
+});
+</script>

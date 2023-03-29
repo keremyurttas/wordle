@@ -11,6 +11,7 @@ module.exports = {
         cell_true_bg: "#66A060",
         cell_false_position: "#CEB02C",
         key_light_bg: "#D3D6DA",
+        message_bg:"#787c7e"
       },
       textColor: {
         key_light: "#56575E",

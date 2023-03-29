@@ -12,6 +12,13 @@ body {
 .cell {
   @apply rounded-md bg-cell_default_bg aspect-square text-3xl uppercase md:text-4xl font-extrabold text-white flex items-center justify-center;
 }
+.rotate-x {
+  transition: transform 2s ease;
+  transform: rotateX(1turn);
+}
+.shake {
+  animation: shake 150ms 2 linear;
+}
 .fade-enter-active {
   animation: fade 0.7s;
 }
@@ -24,6 +31,17 @@ body {
   }
   to {
     opacity: 1;
+  }
+}
+@keyframes shake {
+  0% {
+    transform: translate(3px, 0);
+  }
+  50% {
+    transform: translate(-3px, 0);
+  }
+  100% {
+    transform: translate(0, 0);
   }
 }
 

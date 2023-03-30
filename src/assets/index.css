@@ -4,7 +4,7 @@ body {
   font-family: "Roboto", sans-serif;
 }
 .keyboard-btn {
-  @apply rounded-md  bg-key_light_bg text-lg lg:p-5 md:p-3 p-2  font-semibold text-key_light;
+  @apply rounded-md  bg-key_light_bg text-lg lg:p-5 md:p-3 p-2  font-semibold text-key_light uppercase;
 }
 .letter-container {
   @apply grid grid-cols-5 gap-2 w-full;

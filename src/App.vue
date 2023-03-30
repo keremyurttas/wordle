@@ -14,7 +14,7 @@
     <div
       class="mx-auto px-6 py-8 flex gap-8 md:gap-40 bg-header_bg w-max rounded-2xl"
     >
-      <button @click="showPopup('', myPopup)">
+      <button @click="showPopup('', howToPopup)">
         <img src="./assets/icons/questionMark.svg" alt="" />
       </button>
       <h2 class="font text-2xl md:text-4xl font-semibold">WORDLE</h2>
@@ -42,47 +42,48 @@
     </div>
     <div class="mx-auto w-max flex flex-col gap-3 items-center">
       <div class="space-x-2 md:space-x-3">
-        <button @click="insertLetter('q')" class="keyboard-btn">Q</button>
-        <button @click="insertLetter('w')" class="keyboard-btn">W</button>
-        <button @click="insertLetter('e')" class="keyboard-btn">E</button>
-        <button @click="insertLetter('r')" class="keyboard-btn">R</button>
-        <button @click="insertLetter('t')" class="keyboard-btn">T</button>
-        <button @click="insertLetter('y')" class="keyboard-btn">Y</button>
-        <button @click="insertLetter('u')" class="keyboard-btn">U</button>
-        <button @click="insertLetter('i')" class="keyboard-btn">I</button>
-        <button @click="insertLetter('o')" class="keyboard-btn">O</button>
-        <button @click="insertLetter('p')" class="keyboard-btn">P</button>
+        <button
+          class="keyboard-btn"
+          :class="handleKeyBG(key)"
+          @click="insertLetter(key)"
+          v-for="(key, i) in keyboard.firstRow"
+          :key="i"
+        >
+          {{ key }}
+        </button>
       </div>
       <div class="space-x-2 md:space-x-3">
-        <button @click="insertLetter('a')" class="keyboard-btn">A</button>
-        <button @click="insertLetter('s')" class="keyboard-btn">S</button>
-        <button @click="insertLetter('d')" class="keyboard-btn">D</button>
-        <button @click="insertLetter('f')" class="keyboard-btn">F</button>
-        <button @click="insertLetter('g')" class="keyboard-btn">G</button>
-        <button @click="insertLetter('h')" class="keyboard-btn">H</button>
-        <button @click="insertLetter('j')" class="keyboard-btn">J</button>
-        <button @click="insertLetter('k')" class="keyboard-btn">K</button>
-        <button @click="insertLetter('l')" class="keyboard-btn">L</button>
+        <button
+          class="keyboard-btn"
+          :class="handleKeyBG(key)"
+          @click="insertLetter(key)"
+          v-for="(key, i) in keyboard.secondRow"
+          :key="i"
+        >
+          {{ key }}
+        </button>
       </div>
       <div class="space-x-2 md:space-x-3 flex items-center relative">
         <button @click="predict()" class="keyboard-btn md:px-5">ENTER</button>
-        <button @click="insertLetter('z')" class="keyboard-btn">Z</button>
-        <button @click="insertLetter('x')" class="keyboard-btn">X</button>
-        <button @click="insertLetter('c')" class="keyboard-btn">C</button>
-        <button @click="insertLetter('v')" class="keyboard-btn">V</button>
-        <button @click="insertLetter('b')" class="keyboard-btn">B</button>
-        <button @click="insertLetter('n')" class="keyboard-btn">N</button>
-        <button @click="insertLetter('m')" class="keyboard-btn">M</button>
+        <button
+          class="keyboard-btn"
+          :class="handleKeyBG(key)"
+          @click="insertLetter(key)"
+          v-for="(key, i) in keyboard.thirdRow"
+          :key="i"
+        >
+          {{ key }}
+        </button>
         <button @click="deleteLetter()" class="keyboard-btn h-full">DEL</button>
       </div>
     </div>
   </section>
 </template>
 <script setup lang="ts">
-import myPopup from "./components/myPopup.vue";
+import howToPopup from "./components/howToPopup.vue";
 import messagePopup from "./components/messagePopup.vue";
 import resultPopup from "./components/resultPopup.vue";
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 interface Prediction {
   letter: string;
   result: string;
@@ -97,6 +98,11 @@ const dailyWord = "araba";
 const rowLength = 5;
 const attemptsLimit = 6;
 let currentPopup = messagePopup;
+const keyboard = {
+  firstRow: ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
+  secondRow: ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
+  thirdRow: ["z", "x", "c", "v", "b", "n", "m"],
+};
 
 const entries = ref(
   Array.from({ length: attemptsLimit }, () =>
@@ -179,10 +185,30 @@ function handleCellBG(result: string) {
     ? `bg-cell_false_bg rotate-x`
     : undefined;
 }
-// function handleKeyboardBG(key: string): string {
-//   console.log(entries);
-//   return "";
-// }
+function handleKeyBG(key: string): string {
+  const entries = cellValues.value.filter((cell) => key == cell.letter);
+  console.log(entries);
+  const trueBG = entries.filter((entry) => entry.result == "true");
+  const falsePositionBG = entries.filter(
+    (entry) => entry.result == "falsePosition"
+  );
+  const falseBG = entries.filter((entry) => entry.result == "false");
+
+  return trueBG.length > 0
+    ? "bg-cell_true_bg"
+    : falsePositionBG.length > 0
+    ? "bg-cell_false_position"
+    : falseBG.length > 0
+    ? "bg-cell_false_bg"
+    : "";
+  // return entry?.result === "true"
+  //   ? "bg-cell_true_bg"
+  //   : entry?.result === "falsePosition"
+  //   ? "bg-cell_false_position"
+  //   : entry?.result === "false"
+  //   ? "bg-cell_false_bg"
+  //   : "";
+}
 function handleShake(index: number): string | undefined {
   return isPopupActive.value == true &&
     currentPopup == messagePopup &&
@@ -197,5 +223,22 @@ const cellValues = computed((): Prediction[] => {
     element.forEach((x) => arr.push(x));
   });
   return arr;
+});
+function keyPressed(e: any) {
+  Object.values(keyboard).forEach((row) =>
+    row.includes(e.key) ? insertLetter(e.key) : undefined
+  );
+
+  e.key === "Enter"
+    ? predict()
+    : e.key === "Backspace"
+    ? deleteLetter()
+    : undefined;
+}
+onMounted(() => {
+  document.addEventListener("keydown", keyPressed);
+});
+onBeforeUnmount(() => {
+  document.removeEventListener("keydown", keyPressed);
 });
 </script>

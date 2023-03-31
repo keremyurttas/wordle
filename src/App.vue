@@ -146,8 +146,8 @@ interface Statistics {
   gameFinished: boolean;
 }
 const message = ref();
-const gameIsActive = ref(true);
-const dailyWord = "gizem";
+const isAnimationActive = ref(false);
+const dailyWord = "hello";
 const rowLength = 5;
 const attemptsLimit = 6;
 let currentPopup = messagePopup;
@@ -173,27 +173,31 @@ let statistics: Statistics = {
   correctAttempt: null,
   gameFinished: false,
 };
-let row = ref(0);
+const currentRow = ref(0);
 const isPopupActive = ref(false);
 const wordArray = dailyWord.split("");
 
 function insertLetter(key: string) {
-  if (!statistics.gameFinished) {
-    index <= 4 && gameIsActive.value == true
-      ? (entries.value[row.value].splice(index, 1, { letter: key, result: "" }),
-        index++)
-      : undefined;
-  }
+  index <= 4 && !isAnimationActive.value == true && !statistics.gameFinished
+    ? (entries.value[currentRow.value].splice(index, 1, {
+        letter: key,
+        result: "",
+      }),
+      index++)
+    : undefined;
 }
 function deleteLetter() {
-  if (!statistics.gameFinished)
-    entries.value[row.value].splice(index - 1, 1, { letter: "", result: "" });
+  if (!statistics.gameFinished && !isAnimationActive.value)
+    entries.value[currentRow.value].splice(index - 1, 1, {
+      letter: "",
+      result: "",
+    });
   index > 0 ? index-- : undefined;
 }
 function predict() {
-  if (gameIsActive.value == true && !statistics.gameFinished)
-    entries.value[row.value].filter((cell) => cell.letter != "").length ==
-    rowLength
+  if (!isAnimationActive.value == true && !statistics.gameFinished)
+    entries.value[currentRow.value].filter((cell) => cell.letter != "")
+      .length == rowLength
       ? checkPredict()
       : showPopup("Not enough letters", messagePopup);
 }
@@ -203,8 +207,8 @@ function showPopup(msg: string | null, component: any) {
   currentPopup = component;
 }
 function checkPredict() {
-  gameIsActive.value = false;
-  entries.value[row.value].forEach(
+  isAnimationActive.value = true;
+  entries.value[currentRow.value].forEach(
     (entry, index) => {
       setTimeout(() => {
         entry.letter == wordArray[index]
@@ -221,20 +225,20 @@ function checkPredict() {
   );
 }
 function checkGameIsOver() {
-  entries.value[row.value].filter((entry) => entry.result == "true").length ==
-  rowLength
+  entries.value[currentRow.value].filter((entry) => entry.result == "true")
+    .length == rowLength
     ? [
         showPopup(dailyWord, resultPopup),
         ((statistics.win = true),
         (statistics.gameFinished = true),
-        (statistics.correctAttempt = row.value)),
+        (statistics.correctAttempt = currentRow.value)),
       ]
     : cellValues.value.filter((cell) => cell.letter !== "").length ==
       rowLength * attemptsLimit
     ? [(statistics.gameFinished = true), showPopup(dailyWord, resultPopup)]
-    : row.value++;
+    : currentRow.value++;
   index = 0;
-  gameIsActive.value = true;
+  isAnimationActive.value = false;
 }
 function handleCellBG(result: string) {
   return result === "true"
@@ -247,10 +251,8 @@ function handleCellBG(result: string) {
 }
 function handleKeyBG(key: string): string {
   const entries = cellValues.value.filter((cell) => key === cell.letter);
-  console.log("entries" + entries);
   const counts = entries.reduce((acc: any, entry) => {
     acc[entry.result] = (acc[entry.result] || 0) + 1;
-    console.log(acc, entry);
     return acc;
   }, {});
   return counts.true
@@ -281,8 +283,8 @@ function handleKeyBG(key: string): string {
 function handleShake(index: number): string | undefined {
   return isPopupActive.value == true &&
     currentPopup == messagePopup &&
-    index < (row.value + 1) * rowLength &&
-    index >= row.value * rowLength
+    index < (currentRow.value + 1) * rowLength &&
+    index >= currentRow.value * rowLength
     ? "shake"
     : undefined;
 }
@@ -294,8 +296,8 @@ const cellValues = computed((): Prediction[] => {
   return arr;
 });
 function keyPressed(e: any) {
-  Object.values(keyboard).forEach((row) =>
-    row.includes(e.key) ? insertLetter(e.key) : undefined
+  Object.values(keyboard).forEach((currentRow) =>
+    currentRow.includes(e.key) ? insertLetter(e.key) : undefined
   );
 
   e.key === "Enter"
@@ -324,10 +326,4 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener("keydown", keyPressed);
 });
-// function test() {
-//   const documentClass = document.documentElement.classList;
-//   documentClass.contains("dark")
-//     ? documentClass.remove("dark")
-//     : documentClass.add("dark");
-// }
 </script>

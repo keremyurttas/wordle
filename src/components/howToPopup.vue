@@ -3,13 +3,13 @@
     class="w-full h-full fixed flex pt-20 top-0 justify-center backdrop-blur-sm z-50"
   >
     <div
-      class="w-max p-10 rounded-xl backdrop-blur-sm justify-center h-max bg-white space-y-4 shadow-lg"
+      class="w-max p-10 rounded-xl backdrop-blur-sm justify-center h-max bg-white dark:bg-key_dark_bg space-y-4 shadow-lg"
     >
       <div>
         <button @click="$emit('close')" class="absolute right-5 top-5 text-2xl">
           x
         </button>
-        <h3 class="text-4xl font-bold">How To Play</h3>
+        <h3 class="text-4xl font-bold dark:text-white">How To Play</h3>
         <span class="font-light">Guess the Wordle in 6 tries.</span>
       </div>
       <ul class="list-disc">
@@ -28,7 +28,7 @@
               <div
                 class="cell text-lg md:text-2xl"
                 :class="{
-                  'bg-cell_true_bg': index == 0,
+                  'bg-cell_true_bg dark:bg-cell_true_bg': index == 0,
                   'rotate-x': animation == true,
                 }"
                 v-for="(cell, index) in ['w', 'e', 'a', 'r', 'y']"
@@ -46,7 +46,8 @@
               <div
                 class="cell text-lg md:text-2xl"
                 :class="{
-                  'bg-cell_false_position': index == 1,
+                  'bg-cell_false_position dark:bg-cell_dark_false_position':
+                    index == 1,
                   'rotate-x': animation == true,
                 }"
                 v-for="(cell, index) in ['p', 'i', 'l', 'l', 's']"
@@ -64,7 +65,7 @@
               <div
                 class="cell text-lg md:text-2xl"
                 :class="{
-                  'bg-cell_false_bg': index == 3,
+                  'bg-cell_false_bg dark:bg-cell_false_bg': index == 3,
                   'rotate-x': animation == true,
                 }"
                 v-for="(cell, index) in ['v', 'a', 'g', 'u', 'e']"
@@ -91,6 +92,6 @@ const animation = ref(false);
 onMounted(() => {
   setTimeout(() => {
     animation.value = true;
-  },500);
+  }, 500);
 });
 </script>

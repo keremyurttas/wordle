@@ -6,7 +6,7 @@
       class="mx-auto px-6 py-8 flex gap-8 md:gap-40 dark:bg-header_dark_bg bg-header_bg w-max rounded-2xl"
     >
       <div class="flex gap-4">
-        <button @click="showPopup('', howToPopup)">
+        <button @click="showPopup('', 'howToModal')">
           <img
             class="dark:hidden"
             src="./assets/icons/questionMark.svg"
@@ -18,7 +18,7 @@
             alt=""
           />
         </button>
-        <button @click="showPopup('', resultPopup)">
+        <button @click="showPopup('', 'resultModal')">
           <img class="dark:hidden" src="./assets/icons/statistics.svg" alt="" />
           <img
             class="dark:block hidden"
@@ -105,7 +105,9 @@
         </button>
       </div>
       <div class="space-x-1.5 md:space-x-3 flex items-center relative">
-        <button @click="predict()" class="keyboard-btn md:px-5">ENTER</button>
+        <button @click="enterThePredict()" class="keyboard-btn md:px-5">
+          ENTER
+        </button>
         <button
           class="keyboard-btn"
           :class="handleKeyBG(key)"
@@ -132,31 +134,34 @@
   </section>
 </template>
 <script setup lang="ts">
-import howToPopup from "./components/howToPopup.vue";
-import messagePopup from "./components/messagePopup.vue";
-import resultPopup from "./components/resultPopup.vue";
+import howToModal from "./components/howToModal.vue";
+import messageToast from "./components/messageToast.vue";
+import resultModal from "./components/resultModal.vue";
+import { Prediction, Statistics, MyObject } from "./interfaces/interfaces";
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-interface Prediction {
-  letter: string;
-  result: string;
-}
-interface Statistics {
-  win: boolean;
-  correctAttempt: number | null;
-  gameFinished: boolean;
-}
-const message = ref();
-const isAnimationActive = ref(false);
+
+//*** Daily word of game ***/
 const dailyWord = "hello";
-const rowLength = 5;
-const attemptsLimit = 6;
-let currentPopup = messagePopup;
-const keyboard = {
-  firstRow: ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
-  secondRow: ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
-  thirdRow: ["z", "x", "c", "v", "b", "n", "m"],
+
+const components: MyObject = {
+  howToModal: howToModal,
+  messageToast: messageToast,
+  resultModal: resultModal,
 };
 
+let statistics: Statistics = {
+  win: false,
+  correctAttempt: null,
+  gameFinished: false,
+};
+const message = ref();
+const isAnimationActive = ref(false);
+const rowLength = 5;
+const attemptsLimit = 6;
+let currentPopup = "";
+const currentRow = ref(0);
+const isPopupActive = ref(false);
+let activeCharIndex = 0;
 const entries = ref(
   Array.from({ length: attemptsLimit }, () =>
     Array.from({ length: rowLength }, (): Prediction => {
@@ -167,87 +172,98 @@ const entries = ref(
     })
   )
 );
-let index = 0;
-let statistics: Statistics = {
-  win: false,
-  correctAttempt: null,
-  gameFinished: false,
-};
-const currentRow = ref(0);
-const isPopupActive = ref(false);
-const wordArray = dailyWord.split("");
+function showPopup(msg: string | null, component: string) {
+  message.value = msg;
+  isPopupActive.value = true;
+  currentPopup = components[component];
+}
 
+const keyboard = {
+  firstRow: ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
+  secondRow: ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
+  thirdRow: ["z", "x", "c", "v", "b", "n", "m"],
+};
+const activeRowOfEntries = computed(() => {
+  return entries.value[currentRow.value];
+});
+const isGamePlayable = computed(() => {
+  return !isAnimationActive.value == true && !statistics.gameFinished;
+});
 function insertLetter(key: string) {
-  index <= 4 && !isAnimationActive.value == true && !statistics.gameFinished
-    ? (entries.value[currentRow.value].splice(index, 1, {
-        letter: key,
-        result: "",
-      }),
-      index++)
-    : undefined;
+  if (
+    isGamePlayable.value &&
+    // maximizing the entered letter length
+    activeCharIndex <= rowLength - 1
+  ) {
+    activeRowOfEntries.value.splice(activeCharIndex, 1, {
+      letter: key,
+      result: "",
+    }),
+      activeCharIndex++;
+  }
 }
 function deleteLetter() {
-  if (!statistics.gameFinished && !isAnimationActive.value)
-    entries.value[currentRow.value].splice(index - 1, 1, {
+  if (isGamePlayable.value)
+    activeRowOfEntries.value.splice(activeCharIndex - 1, 1, {
       letter: "",
       result: "",
     });
-  index > 0 ? index-- : undefined;
+  activeCharIndex > 0 ? activeCharIndex-- : undefined;
 }
-function predict() {
-  if (!isAnimationActive.value == true && !statistics.gameFinished)
-    entries.value[currentRow.value].filter((cell) => cell.letter != "")
-      .length == rowLength
+function enterThePredict() {
+  if (isGamePlayable.value)
+    activeRowOfEntries.value.every((cell) => cell.letter != "")
       ? checkPredict()
-      : showPopup("Not enough letters", messagePopup);
+      : showPopup("Not enough letters", "messageToast");
 }
-function showPopup(msg: string | null, component: any) {
-  message.value = msg;
-  isPopupActive.value = true;
-  currentPopup = component;
-}
+
 function checkPredict() {
+  const dailyWordArray = dailyWord.split("");
+  //rotate animation
   isAnimationActive.value = true;
-  entries.value[currentRow.value].forEach(
-    (entry, index) => {
+  // timeout for showing serial animation
+  activeRowOfEntries.value.forEach(
+    (entry, activeCharIndex) => {
       setTimeout(() => {
-        entry.letter == wordArray[index]
+        entry.letter == dailyWordArray[activeCharIndex]
           ? (entry.result = "true")
-          : wordArray.includes(entry.letter) &&
-            entry.letter !== wordArray[index]
+          : dailyWordArray.includes(entry.letter) &&
+            entry.letter !== dailyWordArray[activeCharIndex]
           ? (entry.result = "falsePosition")
           : (entry.result = "false");
-      }, index * 200);
+      }, activeCharIndex * 200);
     },
     setTimeout(() => {
       checkGameIsOver();
     }, rowLength * 200)
   );
 }
+function updateTheStatisticsForWin() {
+  (statistics.win = true),
+    (statistics.gameFinished = true),
+    (statistics.correctAttempt = currentRow.value);
+}
 function checkGameIsOver() {
-  entries.value[currentRow.value].filter((entry) => entry.result == "true")
-    .length == rowLength
-    ? [
-        showPopup(dailyWord, resultPopup),
-        ((statistics.win = true),
-        (statistics.gameFinished = true),
-        (statistics.correctAttempt = currentRow.value)),
-      ]
-    : cellValues.value.filter((cell) => cell.letter !== "").length ==
-      rowLength * attemptsLimit
-    ? [(statistics.gameFinished = true), showPopup(dailyWord, resultPopup)]
-    : currentRow.value++;
-  index = 0;
+  // if row's every letters in true place
+  activeRowOfEntries.value.every((entry) => entry.result == "true")
+    ? [showPopup(dailyWord, "resultModal"), updateTheStatisticsForWin()]
+    : // if there is no attempt left
+    cellValues.value.every((cell) => cell.letter !== "") && !statistics.win
+    ? [(statistics.gameFinished = true), showPopup(dailyWord, "resultModal")]
+    : // if the game continues
+      [currentRow.value++, (activeCharIndex = 0)];
+
+  //rotate animation
   isAnimationActive.value = false;
 }
 function handleCellBG(result: string) {
   return result === "true"
     ? `bg-cell_true_bg dark:bg-cell_dark_true_bg  cell-animation`
-    : result == "falsePosition"
+    : result === "falsePosition"
     ? `bg-cell_false_position dark:bg-cell_dark_false_position cell-animation`
-    : result == "false"
+    : result === "false"
     ? `bg-cell_false_bg dark:bg-cell_dark_false_bg cell-animation`
-    : undefined;
+    : "";
 }
 function handleKeyBG(key: string): string {
   const entries = cellValues.value.filter((cell) => key === cell.letter);
@@ -282,26 +298,30 @@ function handleKeyBG(key: string): string {
 // }
 function handleShake(index: number): string | undefined {
   return isPopupActive.value == true &&
-    currentPopup == messagePopup &&
+    currentPopup == messageToast &&
     index < (currentRow.value + 1) * rowLength &&
     index >= currentRow.value * rowLength
     ? "shake"
     : undefined;
 }
-const cellValues = computed((): Prediction[] => {
-  let arr: Prediction[] = [];
-  entries.value.forEach((element) => {
-    element.forEach((x) => arr.push(x));
-  });
-  return arr;
-});
+// const cellValues = computed((): Prediction[] => {
+//   let arr: Prediction[] = [];
+//   entries.value.forEach((element) => {
+//     element.forEach((x) => arr.push(x));
+//   });
+//   return arr;
+// });
+const cellValues = computed(() =>
+  entries.value.flatMap((element) => element).flat()
+);
+
 function keyPressed(e: any) {
   Object.values(keyboard).forEach((currentRow) =>
     currentRow.includes(e.key) ? insertLetter(e.key) : undefined
   );
 
   e.key === "Enter"
-    ? predict()
+    ? enterThePredict()
     : e.key === "Backspace"
     ? deleteLetter()
     : undefined;

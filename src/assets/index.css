@@ -88,7 +88,7 @@ input:checked + .slider:before {
   animation: fade 0.7s reverse;
 }
 .cell-animation{
-  animation: cell .5s;
+  animation: cell .7s;
 }
 @keyframes cell {
   0% {

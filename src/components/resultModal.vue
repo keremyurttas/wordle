@@ -1,6 +1,5 @@
 <template>
   <section
-    ref="myPopup"
     class="w-full h-full fixed pt-20 flex top-0 justify-center z-50 backdrop-blur-sm"
   >
     <div
@@ -50,11 +49,8 @@
       >
         <strong>{{ index + 1 }}</strong>
         <div
-          class="w-5 h-5 bg-message_bg flex items-center justify-center text-white"
-          :class="{
-            'w-full bg-cell_dark_true_bg dark:bg-cell_dark_true_bg':
-              statistics.correctAttempt == index,
-          }"
+          :class="resultBarDesign(index)"
+          class="w-5 h-5 flex items-center justify-center text-white"
         >
           {{ index == statistics.correctAttempt ? 1 : 0 }}
         </div>
@@ -63,7 +59,12 @@
   </section>
 </template>
 <script setup lang="ts">
-import { defineProps, onMounted, ref } from "vue";
-const myPopup = ref(null);
-defineProps(["message", "statistics"]);
+import { defineProps } from "vue";
+
+const props = defineProps(["message", "statistics"]);
+function resultBarDesign(index: number) {
+  return props.statistics.correctAttempt == index
+    ? "w-full bg-cell_true_bg dark:bg-cell_dark_true_bg"
+    : "bg-message_bg";
+}
 </script>

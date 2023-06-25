@@ -141,7 +141,7 @@ import { Prediction, Statistics, MyObject } from "./interfaces/interfaces";
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 
 //*** Daily word of game ***/
-const dailyWord = "hello";
+const dailyWord = "modal";
 
 const components: MyObject = {
   howToModal: howToModal,
@@ -274,7 +274,7 @@ function handleKeyBG(key: string): string {
   return counts.true
     ? "bg-cell_true_bg dark:bg-cell_true_bg"
     : counts.falsePosition
-    ? "bg-cell_false_position dark:bg-cell_dark_true_bg"
+    ? "bg-cell_false_position dark:bg-cell_dark_false_position"
     : counts.false
     ? "bg-cell_false_bg dark:bg-key_dark_false"
     : "";

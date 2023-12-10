@@ -298,7 +298,7 @@ function handleKeyBG(key: string): string {
 // }
 function handleShake(index: number): string | undefined {
   return isPopupActive.value == true &&
-    currentPopup == messageToast &&
+    currentPopup == 'messageToast' &&
     index < (currentRow.value + 1) * rowLength &&
     index >= currentRow.value * rowLength
     ? "shake"
